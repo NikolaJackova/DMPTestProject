@@ -77,19 +77,23 @@ namespace DMPTestProject.Controllers
             }
         }
 
-        // GET: RSSFeedController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
         // POST: RSSFeedController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
+        public async Task<ActionResult> Delete(int id, IFormCollection collection)
         {
             try
             {
+                string[] ids = collection["ID"].ToString().Split(new char[] { ',' });
+                foreach (string item in ids)
+                {
+                    if (item != string.Empty)
+                    {
+                        var feed = await dmpDbContext.Feeds.FindAsync(int.Parse(item));
+                        dmpDbContext.Feeds.Remove(feed);
+                        await dmpDbContext.SaveChangesAsync();
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
             catch
