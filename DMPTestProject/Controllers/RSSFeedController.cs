@@ -43,19 +43,32 @@ namespace DMPTestProject.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Detail(int id)
+        {
+            return View();
+        }
+
         // GET: RSSFeedController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            var feed = dmpDbContext.Feeds.Where(item => item.Id == id).FirstOrDefault();
+            return View(feed);
         }
 
         // POST: RSSFeedController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<ActionResult> Edit(int id, IFormCollection collection)
         {
             try
             {
+                string url = collection["Url"];
+                string name = collection["Name"];
+                var feed = dmpDbContext.Feeds.Where(item => item.Id == id).FirstOrDefault();
+                feed.Url = url;
+                feed.Name = name;
+                await dmpDbContext.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             catch
