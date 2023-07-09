@@ -1,5 +1,10 @@
 ﻿@model List<DMPTestProject.Models.RSS_Feed.Content>
 @{
+    <form method="post" asp-action="Detail">
+        <span>Date from: </span><input type="datetime-local" name="DateFrom" />
+        <span>Date to: </span><input type="datetime-local" name="DateTo" />
+        <input type="submit" value="Filter" />
+    </form>
     @foreach (var item in Model)
     {
         <div>

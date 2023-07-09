@@ -27,11 +27,12 @@ namespace DMPTestProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Index(string searchName)
         {
-            List<RSSFeed> rssFeeds = null;
+            List<RSSFeed> rssFeeds = new List<RSSFeed>();
             if (searchName == string.Empty || searchName is null)
             {
                 rssFeeds = await dmpDbContext.Feeds.ToListAsync();
-            } else
+            }
+            else
             {
                 rssFeeds = await dmpDbContext.Feeds.Where(item => item.Name.StartsWith(searchName)).ToListAsync();
             }
@@ -48,6 +49,10 @@ namespace DMPTestProject.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddRSSFeedViewModel addRSSFeedViewModel)
         {
+            if (!IsValidFeedUrl(addRSSFeedViewModel.Url))
+            {
+                return BadRequest("Invalid feed URL");
+            }
             var feed = new RSSFeed
             {
                 Url = addRSSFeedViewModel.Url,
@@ -63,6 +68,17 @@ namespace DMPTestProject.Controllers
         public async Task<IActionResult> Detail(int id)
         {
             List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id).ToList();
+            return View(content);
+        }
+
+        [HttpPost("RSSFeed/{id:int}")]
+        public async Task<IActionResult> Detail(int id, DateTime dateFrom, DateTime dateTo)
+        {
+            if (dateTo == DateTime.MinValue)
+            {
+                dateTo = DateTime.MaxValue;
+            }
+            List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id && content.PubDate <= dateTo && content.PubDate >= dateFrom).ToList();
             return View(content);
         }
 
@@ -150,7 +166,7 @@ namespace DMPTestProject.Controllers
                             Title = syndicationItem.Title.Text,
                             Description = syndicationItem.Summary.Text,
                             PubDate = syndicationItem.PublishDate.DateTime,
-                            Url = syndicationItem.Links[0]?.Uri.ToString(),
+                            Url = syndicationItem.Links.ElementAtOrDefault(0)?.Uri.ToString(),
                             Feed = feed
                         };
                         dmpDbContext.Contents.Add(content);
@@ -159,6 +175,24 @@ namespace DMPTestProject.Controllers
                     }
                 }
             }
+        }
+
+        private bool IsValidFeedUrl(string url)
+        {
+            bool isValid = true;
+            try
+            {
+                XmlReader reader = XmlReader.Create(url);
+                Rss20FeedFormatter formatter = new Rss20FeedFormatter();
+                formatter.ReadFrom(reader);
+                reader.Close();
+            }
+            catch
+            {
+                isValid = false;
+            }
+
+            return isValid;
         }
     }
 }
