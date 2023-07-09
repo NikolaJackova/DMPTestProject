@@ -4,6 +4,8 @@ using DMPTestProject.Models.RSS_Feed.ViewModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.ServiceModel.Syndication;
+using System.Xml;
 
 namespace DMPTestProject.Controllers
 {
@@ -37,16 +39,17 @@ namespace DMPTestProject.Controllers
                 Url = addRSSFeedViewModel.Url,
                 Name = addRSSFeedViewModel.Name
             };
-
             await dmpDbContext.Feeds.AddAsync(feed);
             await dmpDbContext.SaveChangesAsync();
+            RefreshFeed(feed.Id);
             return RedirectToAction("Index");
         }
 
-        [HttpGet]
+        [HttpGet("RSSFeed/{id:int}")]
         public async Task<IActionResult> Detail(int id)
         {
-            return View();
+            List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id).ToList();
+            return View(content);
         }
 
         // GET: RSSFeedController/Edit/5
@@ -99,6 +102,48 @@ namespace DMPTestProject.Controllers
             catch
             {
                 return View();
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> Refresh(int id)
+        {
+            RefreshFeed(id);
+            return RedirectToAction("Index");
+        }
+
+        private void RefreshFeed(int id)
+        {
+            RSSFeed? feed = dmpDbContext.Feeds.Find(id);
+            if (feed is not null)
+            {
+                Rss20FeedFormatter rssFormatter;
+
+                using (var xmlReader = XmlReader.Create(feed.Url))
+                {
+                    rssFormatter = new Rss20FeedFormatter();
+                    rssFormatter.ReadFrom(xmlReader);
+                }
+
+                foreach (var syndicationItem in rssFormatter.Feed.Items)
+                {
+                    if (!dmpDbContext.Contents.Any(content => syndicationItem.Id == content.Id))
+                    {
+                        Content content = new Content()
+                        {
+                            Id = syndicationItem.Id,
+                            Author = syndicationItem.Authors.ElementAtOrDefault(0)?.Name,
+                            Title = syndicationItem.Title.Text,
+                            Description = syndicationItem.Summary.Text,
+                            PubDate = syndicationItem.PublishDate.DateTime,
+                            Url = syndicationItem.Links[0]?.Uri.ToString(),
+                            Feed = feed
+                        };
+                        dmpDbContext.Contents.Add(content);
+                        feed.Contents.Add(content);
+                        dmpDbContext.SaveChanges();
+                    }
+                }
             }
         }
     }

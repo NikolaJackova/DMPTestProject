@@ -10,8 +10,9 @@
             <tr>
                 <th><input type="checkbox" id="checkBoxAll" /> </th>
                 <th>Id</th>
-                <th>Url</th>
                 <th>Name</th>
+                <th>Url</th>
+                <th> </th>
                 <th> </th>
             </tr>
         </thead>
@@ -21,9 +22,10 @@
                 <tr>
                     <td><input type="checkbox" class="checkBox" value="@item.Id" name="ID"></td>
                     <td>@item.Id</td>
-                    <td>@item.Url</td>
                     <td>@item.Name</td>
+                    <td><a href=@item.Url>@item.Url</a></td>
                     <td><a href="RSSFeed/@item.Id">Detail</a> | <a href="RSSFeed/Edit/@item.Id">Edit</a></td>
+                    <td><a href="RSSFeed/Refresh/@item.Id">Refresh</a></td>
                 </tr>
             }
         </tbody>
