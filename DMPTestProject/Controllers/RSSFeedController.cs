@@ -24,6 +24,20 @@ namespace DMPTestProject.Controllers
             return View(rssFeeds);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> Index(string searchName)
+        {
+            List<RSSFeed> rssFeeds = null;
+            if (searchName == string.Empty || searchName is null)
+            {
+                rssFeeds = await dmpDbContext.Feeds.ToListAsync();
+            } else
+            {
+                rssFeeds = await dmpDbContext.Feeds.Where(item => item.Name.StartsWith(searchName)).ToListAsync();
+            }
+            return View(rssFeeds);
+        }
+
         // GET: RSSFeedController/Add
         public IActionResult Add()
         {

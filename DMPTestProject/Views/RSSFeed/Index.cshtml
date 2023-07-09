@@ -3,6 +3,10 @@
 }
 
 <h1>RSS Feeds</h1>
+<form method="post" asp-action="Index">
+    <span>Search by name: </span><input type="text" name="SearchName" />
+    <input type="submit" value="Search" />
+</form>
 <form asp-action="Delete" method="post">
     <button type="submit" class="btn btn-primary" id="delete"><i class="fa fa-trash-o"></i>Delete</button>
     <table class="table">
