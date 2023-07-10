@@ -20,21 +20,22 @@ namespace DMPTestProject.Controllers
         // GET: RSSFeedController
         public async Task<IActionResult> Index()
         {
-            List<RSSFeed> rssFeeds = await dmpDbContext.Feeds.ToListAsync();
+            List<RSSFeed> rssFeeds = await dmpDbContext.Feeds.OrderBy(feed => feed.Id).ToListAsync();
             return View(rssFeeds);
         }
 
         [HttpPost]
         public async Task<IActionResult> Index(string searchName)
         {
+            ViewData["SearchName"] = searchName;
             List<RSSFeed> rssFeeds = new List<RSSFeed>();
             if (searchName == string.Empty || searchName is null)
             {
-                rssFeeds = await dmpDbContext.Feeds.ToListAsync();
+                rssFeeds = await dmpDbContext.Feeds.OrderBy(feed => feed.Id).ToListAsync();
             }
             else
             {
-                rssFeeds = await dmpDbContext.Feeds.Where(item => item.Name.StartsWith(searchName)).ToListAsync();
+                rssFeeds = await dmpDbContext.Feeds.Where(item => item.Name.ToLower().Contains(searchName.ToLower())).OrderBy(feed => feed.Id).ToListAsync();
             }
             return View(rssFeeds);
         }
@@ -60,7 +61,14 @@ namespace DMPTestProject.Controllers
             };
             await dmpDbContext.Feeds.AddAsync(feed);
             await dmpDbContext.SaveChangesAsync();
-            RefreshFeed(feed.Id);
+            try
+            {
+                RefreshFeed(feed.Id);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return RedirectToAction("Index");
         }
 
@@ -78,7 +86,15 @@ namespace DMPTestProject.Controllers
             {
                 dateTo = DateTime.MaxValue;
             }
-            List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id && content.PubDate <= dateTo && content.PubDate >= dateFrom).ToList();
+            if (dateFrom != DateTime.MinValue)
+            {
+                ViewData["DateFrom"] = dateFrom.ToString("yyyy-MM-ddTHH:mm");
+            }
+            if (dateTo != DateTime.MaxValue)
+            {
+                ViewData["DateTo"] = dateTo.ToString("yyyy-MM-ddTHH:mm");
+            }
+            List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id && content.PubDate <= dateTo.ToUniversalTime() && content.PubDate >= dateFrom.ToUniversalTime()).OrderByDescending(content => content.PubDate).ToList();
             return View(content);
         }
 
@@ -138,7 +154,14 @@ namespace DMPTestProject.Controllers
         [HttpGet]
         public async Task<ActionResult> Refresh(int id)
         {
-            RefreshFeed(id);
+            try
+            {
+                RefreshFeed(id);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
             return RedirectToAction("Index");
         }
 

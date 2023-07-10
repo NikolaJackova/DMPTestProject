@@ -4,7 +4,7 @@
 
 <h1>RSS Feeds</h1>
 <form method="post" asp-action="Index">
-    <span>Search by name: </span><input type="text" name="SearchName" />
+    <span>Search by name: </span><input type="text" name="SearchName" value="@ViewData["SearchName"]"/>
     <input type="submit" value="Search" />
 </form>
 <form asp-action="Delete" method="post">
