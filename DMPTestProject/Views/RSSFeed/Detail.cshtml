@@ -1,15 +1,22 @@
 ﻿@model List<DMPTestProject.Models.RSS_Feed.Content>
 @{
     <form method="post" asp-action="Detail">
-        <span>Date from: </span><input type="datetime-local" name="DateFrom" />
-        <span>Date to: </span><input type="datetime-local" name="DateTo" />
-        <input type="submit" value="Filter" />
+                <span>Date from: </span><input type="datetime-local" name="DateFrom" />
+                <span>Date to: </span><input type="datetime-local" name="DateTo" />
+                <input type="submit" value="Filter" />
     </form>
     @foreach (var item in Model)
     {
         <div>
-            <h4><a href="@item.Url">@item.Title | @item.PubDate</a></h4>
-            <p>@item.Description</p>
+            @if (@item.Url is not null)
+            {
+                            <h4><a href="@item.Url">@item.Title</a> | @item.PubDate</h4>
+            }
+            else
+            {
+                            <h4>@item.Title | @item.PubDate</h4>
+            }
+                    <p>@item.Description</p>
         </div>
     }
 }

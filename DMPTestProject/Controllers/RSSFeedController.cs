@@ -67,7 +67,7 @@ namespace DMPTestProject.Controllers
         [HttpGet("RSSFeed/{id:int}")]
         public async Task<IActionResult> Detail(int id)
         {
-            List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id).ToList();
+            List<Content> content = dmpDbContext.Contents.Where(content => content.Feed.Id == id).OrderByDescending(content => content.PubDate).ToList();
             return View(content);
         }
 
@@ -157,11 +157,10 @@ namespace DMPTestProject.Controllers
 
                 foreach (var syndicationItem in rssFormatter.Feed.Items)
                 {
-                    if (!dmpDbContext.Contents.Any(content => syndicationItem.Id == content.Id))
+                    if (!dmpDbContext.Contents.Any(content => syndicationItem.Title.Text == content.Title && content.Feed.Id == id))
                     {
                         Content content = new Content()
                         {
-                            Id = syndicationItem.Id,
                             Author = syndicationItem.Authors.ElementAtOrDefault(0)?.Name,
                             Title = syndicationItem.Title.Text,
                             Description = syndicationItem.Summary.Text,

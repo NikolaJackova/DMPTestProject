@@ -9,45 +9,44 @@
 </form>
 <form asp-action="Delete" method="post">
     <button type="submit" class="btn btn-primary" id="delete"><i class="fa fa-trash-o"></i> Delete</button>
+    <table class="table">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="checkBoxAll" /> </th>
+                <th>Id</th>
+                <th>Name</th>
+                <th>Url</th>
+                <th> </th>
+                <th> </th>
+            </tr>
+        </thead>
+        <tbody>
+                @foreach (var item in Model)
+                {
+                        <tr>
+                            <td><input type="checkbox" class="checkBox" value="@item.Id" name="ID"></td>
+                            <td>@item.Id</td>
+                            <td>@item.Name</td>
+                            <td><a href=@item.Url>@item.Url</a></td>
+                            <td><a href="RSSFeed/@item.Id">Detail</a> | <a href="RSSFeed/Edit/@item.Id">Edit</a></td>
+                            <td><a href="RSSFeed/Refresh/@item.Id">Refresh</a></td>
+                        </tr>
+                }
+        </tbody>
+    </table>
 </form>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th><input type="checkbox" id="checkBoxAll" /> </th>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Url</th>
-            <th> </th>
-            <th> </th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td><input type="checkbox" class="checkBox" value="@item.Id" name="ID"></td>
-                <td>@item.Id</td>
-                <td>@item.Name</td>
-                <td><a href=@item.Url>@item.Url</a></td>
-                <td><a href="RSSFeed/@item.Id">Detail</a> | <a href="RSSFeed/Edit/@item.Id">Edit</a></td>
-                <td><a href="RSSFeed/Refresh/@item.Id">Refresh</a></td>
-            </tr>
-        }
-    </tbody>
-</table>
-
 @section Scripts {
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $('#checkBoxAll').click(function () {
-                if ($(this).is(":checked")) {
-                    $(".checkBox").prop("checked", true)
-                }
-                else {
-                    $(".checkBox").prop("checked", false)
-                }
-            });
-        });
-    </script>
+            <script type="text/javascript">
+                $(document).ready(function () {
+                    $('#checkBoxAll').click(function () {
+                        if ($(this).is(":checked")) {
+                            $(".checkBox").prop("checked", true)
+                        }
+                        else {
+                            $(".checkBox").prop("checked", false)
+                        }
+                    });
+                });
+            </script>
 }
